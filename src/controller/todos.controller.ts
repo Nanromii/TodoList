@@ -1,5 +1,5 @@
 
-import { TodosService } from './todos.service';
+import { TodosService } from '../service/todos.service';
 import { Controller } from '@nestjs/common';
 
 @Controller('todos')

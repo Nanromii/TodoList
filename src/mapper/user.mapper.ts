@@ -1,5 +1,5 @@
 import { UserResponse } from '../dto/response/user-response.dto';
-import { User } from '../entity/user';
+import { User } from '../entities/user';
 import { UserRequest } from '../dto/request/user-request.dto';
 import { Injectable } from '@nestjs/common';
 

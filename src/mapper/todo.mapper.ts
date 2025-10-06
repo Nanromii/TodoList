@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TodoResponse } from '../dto/response/todo.response';
-import { Todo } from '../entity/todo';
+import { Todo } from '../entities/todo';
 import { CreateTodoRequest } from '../dto/request/create-todo.request';
 
 @Injectable()
