@@ -38,8 +38,10 @@ export class UsersService {
     }
 
     findAll(page: number = 1, limit: number = 10, sort?: string[]): Promise<PageResponse<UserResponse>> {
+        this.logger.log("Starting fetch information of all users.");
         const queryBuidler = this.repository.createQueryBuilder('user');
         Pagination.applySort(queryBuidler, sort, 'user');
+        this.logger.log("Fetched information of all users successully.");
         return Pagination.paginate<User, UserResponse>(queryBuidler, page, limit, (u) => this.mapper.toResponse(u));
     }
 

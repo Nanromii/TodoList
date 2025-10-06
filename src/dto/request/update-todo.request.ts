@@ -1,11 +1,9 @@
 export class UpdateTodoRequest {
-  id: number;
-  title: string;
-  description?: string;
+    title: string;
+    description?: string;
 
-  constructor(id: number, title: string, description: string) {
-    this.id = id;
-    this.title = title;
-    this.description = description;
-  }
+    constructor(title: string, description: string) {
+        this.title = title;
+        this.description = description;
+    }
 }
