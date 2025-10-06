@@ -31,9 +31,9 @@ export class TodosService {
             throw Error(`Todo with id=${userId} not found.`);
         }
         todo.user = user;
-        this.repository.save(todo);
+        const curTodo = await this.repository.save(todo);
         this.logger.log("Created todo successfully.")
-        return todo.id;
+        return curTodo.id;
     }
 
     async findOne(id: number): Promise<TodoResponse> {
@@ -55,9 +55,9 @@ export class TodosService {
         return Pagination.paginate<Todo, TodoResponse>(queryBuilder, page, limit, (t) => this.mapper.toResponse(t));
     }
 
-    remove(id: number): void {
+    async remove(id: number): Promise<void> {
         this.logger.log(`Starting delete todo, id=${id}.`);
-        this.repository.delete({id});
+        await this.repository.delete({id});
         this.logger.log("Deleted todo successfully.")
     }
 
@@ -71,7 +71,7 @@ export class TodosService {
         todo.title = request.title;
         todo.description = request.description;
         todo.updatedAt = new Date();
-        this.repository.save(todo);
+        await this.repository.save(todo);
         this.logger.log("Updated information for todo successfully.");
     }
 
@@ -83,7 +83,7 @@ export class TodosService {
             throw Error(`Todo with id=${id} not found.`);
         }
         todo.isDone = true;
-        this.repository.save(todo);
+        await this.repository.save(todo);
         this.logger.log(`Marked todo as complete successfully, todoId=${id}.`);
     }
 }

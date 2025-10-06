@@ -2,9 +2,9 @@ export class TodoResponse {
   id: number;
   title: string;
   description?: string;
-  isDone: boolean;
+  isDone: string;
 
-  constructor(id: number, title: string, isDone: boolean, description?: string) {
+  constructor(id: number, title: string, isDone: string, description?: string) {
     this.id = id;
     this.title = title;
     this.isDone = isDone;

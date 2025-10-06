@@ -18,12 +18,16 @@ export class UsersService {
         private readonly mapper: UserMapper,
     ) {}
 
-    create(request: UserRequest): number {
+    async create(request: UserRequest): Promise<number> {
         this.logger.log(`Starting create user, username=${request.username}.`);
-        const user = this.mapper.toEntity(request);
-        this.repository.save(user);
+        const user = await this.repository.findOneBy({username : request.username});
+        if (user != null) {
+            this.logger.warn(`User with ${request.username} already exists.`);
+            throw new Error(`User with ${request.username} already exists.`);
+        }
+        const curUser = await this.repository.save(this.mapper.toEntity(request));
         this.logger.log("Created user successfully.")
-        return user.id;
+        return curUser.id;
     }
 
     async findOne(id: number): Promise<UserResponse> {
@@ -39,10 +43,10 @@ export class UsersService {
 
     findAll(page: number = 1, limit: number = 10, sort?: string[]): Promise<PageResponse<UserResponse>> {
         this.logger.log("Starting fetch information of all users.");
-        const queryBuidler = this.repository.createQueryBuilder('user');
-        Pagination.applySort(queryBuidler, sort, 'user');
-        this.logger.log("Fetched information of all users successully.");
-        return Pagination.paginate<User, UserResponse>(queryBuidler, page, limit, (u) => this.mapper.toResponse(u));
+        const queryBuilder = this.repository.createQueryBuilder('user');
+        Pagination.applySort(queryBuilder, sort, 'user');
+        this.logger.log("Fetched information of all users successfully.");
+        return Pagination.paginate<User, UserResponse>(queryBuilder, page, limit, (u) => this.mapper.toResponse(u));
     }
 
     async remove(id: number): Promise<void> {

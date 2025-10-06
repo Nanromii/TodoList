@@ -5,17 +5,18 @@ import { CreateTodoRequest } from '../dto/request/create-todo.request';
 
 @Injectable()
 export class TodoMapper {
-  toResponse(todo: Todo): TodoResponse {
-    return new TodoResponse(todo.id, todo.title, todo.isDone, todo.description);
-  }
+    toResponse(todo: Todo): TodoResponse {
+        const isDone = todo.isDone ? "Đã hoàn thành." : "Chưa hoàn thành.";
+        return new TodoResponse(todo.id, todo.title, isDone, todo.description);
+    }
 
-  toEntity(request: CreateTodoRequest): Todo {
-    const entity = new Todo();
-    entity.title = request.title;
-    entity.description = request.description;
-    entity.isDone = false;
-    entity.createdAt = new Date();
-    entity.updatedAt = new Date();
-    return entity;
-  }
+    toEntity(request: CreateTodoRequest): Todo {
+        const entity = new Todo();
+        entity.title = request.title;
+        entity.description = request.description;
+        entity.isDone = false;
+        entity.createdAt = new Date();
+        entity.updatedAt = new Date();
+        return entity;
+    }
 }
