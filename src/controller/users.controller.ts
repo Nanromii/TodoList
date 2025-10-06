@@ -32,7 +32,7 @@ export class UsersController {
         } catch (error) {
             this.logger.error(`Failed to create user: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse("Failed to create user"),
+                new ApiResponse(`Failed to create user: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -56,7 +56,7 @@ export class UsersController {
                 throw error;
             }
             throw new HttpException(
-                new ApiResponse('Failed to fetch user information'),
+                new ApiResponse(`Failed to fetch user information: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -79,7 +79,7 @@ export class UsersController {
         } catch (error) {
             this.logger.error(`Failed to fetch users: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to fetch users'),
+                new ApiResponse(`Failed to fetch users: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -97,7 +97,7 @@ export class UsersController {
         } catch (error) {
             this.logger.error(`Failed to delete user: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to delete user'),
+                new ApiResponse(`Failed to delete user: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

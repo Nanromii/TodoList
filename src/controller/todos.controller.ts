@@ -38,7 +38,7 @@ export class TodosController {
         } catch (error) {
             this.logger.error(`Failed to create todo: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to create todo'),
+                new ApiResponse(`Failed to create todo: ${error.message}`),
                 HttpStatus.BAD_REQUEST,
             );
         }
@@ -60,7 +60,7 @@ export class TodosController {
             this.logger.error(`Failed to fetch todo: ${error.message}`, error.stack);
             if (error instanceof HttpException) throw error;
             throw new HttpException(
-                new ApiResponse('Failed to fetch todo'),
+                new ApiResponse(`Failed to fetch todo: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -80,7 +80,7 @@ export class TodosController {
         } catch (error) {
             this.logger.error(`Failed to fetch todos: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to fetch todos'),
+                new ApiResponse(`Failed to fetch todos: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -99,7 +99,7 @@ export class TodosController {
         } catch (error) {
             this.logger.error(`Failed to update todo: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to update todo'),
+                new ApiResponse(`Failed to update todo: ${error.message}`),
                 HttpStatus.BAD_REQUEST,
             );
         }
@@ -117,7 +117,7 @@ export class TodosController {
         } catch (error) {
             this.logger.error(`Failed to mark todo complete: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to mark todo complete'),
+                new ApiResponse(`Failed to mark todo complete: ${error.message}`),
                 HttpStatus.BAD_REQUEST,
             );
         }
@@ -135,7 +135,7 @@ export class TodosController {
         } catch (error) {
             this.logger.error(`Failed to delete todo: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse('Failed to delete todo'),
+                new ApiResponse(`Failed to delete todo: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
