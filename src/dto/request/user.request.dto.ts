@@ -1,10 +1,5 @@
-import {
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { isStrongPasswordDecorator } from '../../utils/decorator/strongpassword-decorator.utils';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsStrongPasswordDecorator } from '../../utils/decorator/strongpassword-decorator.utils';
 
 export class UserRequest {
     @MaxLength(50, {
@@ -19,7 +14,7 @@ export class UserRequest {
     @IsNotEmpty({ message: 'Username cannot be empty.' })
     username: string;
 
-    @isStrongPasswordDecorator()
+    @IsStrongPasswordDecorator()
     password: string;
 
     constructor(username: string, password: string) {

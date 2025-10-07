@@ -5,18 +5,23 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user';
 import { Todo } from '../entities/todo';
 import { AuthModule } from './auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            isGlobal: true
+        }),
         TypeOrmModule.forRoot({
             type: 'mysql',
-            host: 'localhost',
-            port: 3306,
-            username: 'root',
-            password: 'nam9mgchanh',
-            database: 'todolist',
+            host: process.env.DB_HOST,
+            port: Number(process.env.DB_PORT),
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE,
             entities: [User, Todo],
-            logging: true
+            autoLoadEntities: true,
+            synchronize: true,
         }),
         TodosModule,
         UsersModule,
