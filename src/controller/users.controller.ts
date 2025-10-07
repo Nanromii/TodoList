@@ -9,18 +9,37 @@ import {
   ParseIntPipe,
   HttpException,
   HttpStatus,
-  Query,
+  Query, UseGuards, Req,
 } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
-import { UserRequest } from '../dto/request/user-request.dto';
+import { UserRequest } from '../dto/request/user.request.dto';
 import { UserResponse } from '../dto/response/user-response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
+import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard';
+import type { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
     private readonly logger = new Logger(UsersController.name);
     constructor(private readonly userService: UsersService) {}
+
+    @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    async myProfile(@Req() req: Request): Promise<ApiResponse<Express.User>> {
+        this.logger.log("Request get my information.");
+        try {
+            const user = req.user;
+            this.logger.log(`Get my information successfully.`);
+            return new ApiResponse("Get my information successfully.", user);
+        } catch (error) {
+            this.logger.error(`Failed to get my information.`);
+            throw new HttpException(
+                new ApiResponse(`Failed to get my information.`),
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
 
     @Post()
     async create(@Body() request: UserRequest): Promise<ApiResponse<number>> {
@@ -45,9 +64,6 @@ export class UsersController {
         this.logger.log(`Request fetch information of user, userId=${id}`);
         try {
             const user = await this.userService.findOne(id);
-            if (!user) {
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-            }
             this.logger.log(`Fetched user successfully, userId=${id}`);
             return new ApiResponse('Fetched user successfully.', user);
         } catch (error) {

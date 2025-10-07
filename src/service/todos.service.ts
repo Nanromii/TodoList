@@ -6,7 +6,7 @@ import { TodoMapper } from '../mapper/todo.mapper';
 import { CreateTodoRequest } from '../dto/request/create-todo.request';
 import { TodoResponse } from '../dto/response/todo.response';
 import { PageResponse } from '../dto/response/page.response';
-import { Pagination } from '../common/pagination.common';
+import { Pagination } from '../utils/pagination.utils';
 import { UpdateTodoRequest } from '../dto/request/update-todo.request';
 import { User } from '../entities/user';
 

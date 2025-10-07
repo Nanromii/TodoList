@@ -1,30 +1,30 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { Todo } from './todo';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column()
-  username: string;
+    @Column()
+    username: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+    @UpdateDateColumn()
+    updatedAt: Date;
 
-  @OneToMany(
-    () => Todo,
-    (todo) => todo.user
-  )
-  todos: Todo[];
+    @Column()
+    password: string;
+
+    @OneToMany(() => Todo, (todo) => todo.user)
+    todos: Todo[];
 }

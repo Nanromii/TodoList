@@ -9,19 +9,22 @@ import {
 export class CreateTodoRequest {
     @MaxLength(50, {
         message: (args) =>
-            `Title quá dài (${args.value.length} ký tự) - tối đa chỉ được ${args.constraints[0]} ký tự.`,
+            `Title is too long (${args.value.length} characters) - maximum allowed is ${args.constraints[0]} characters.`,
     })
     @MinLength(5, {
         message: (args) =>
-            `Title quá ngắn (${args.value.length} ký tự) - tối thiểu là ${args.constraints[0]} ký tự.`
+            `Title is too short (${args.value.length} characters) - minimum required is ${args.constraints[0]} characters.`,
     })
-    @IsString({message: "Title phải là một chuỗi kí tự."})
-    @IsNotEmpty({message: "Title không được để trống."})
+    @IsString({ message: 'Title must be a string.' })
+    @IsNotEmpty({ message: 'Title cannot be empty.' })
     title: string;
 
     @IsOptional()
-    @IsString({ message: "Description phải là chuỗi ký tự." })
-    @MaxLength(200, { message: "Description tối đa 200 ký tự." })
+    @IsString({ message: "Description must be a string." })
+    @MaxLength(200, {
+        message: (args) =>
+            `Description is too long (${args.value.length} characters) - maximum allowed is ${args.constraints[0]} characters.`,
+    })
     description?: string;
 
     constructor(title: string, description?: string) {

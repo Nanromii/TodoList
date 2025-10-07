@@ -3,10 +3,10 @@ import { UserMapper } from '../mapper/user.mapper';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRequest } from '../dto/request/user-request.dto';
+import { UserRequest } from '../dto/request/user.request.dto';
 import { UserResponse } from '../dto/response/user-response.dto';
 import { PageResponse } from '../dto/response/page.response';
-import { Pagination } from '../common/pagination.common';
+import { Pagination } from '../utils/pagination.utils';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +25,8 @@ export class UsersService {
             this.logger.warn(`User with ${request.username} already exists.`);
             throw new Error(`User with ${request.username} already exists.`);
         }
-        const curUser = await this.repository.save(this.mapper.toEntity(request));
+        const entity = await this.mapper.toEntity(request);
+        const curUser = await this.repository.save(entity);
         this.logger.log("Created user successfully.")
         return curUser.id;
     }
@@ -53,5 +54,14 @@ export class UsersService {
         this.logger.log(`Starting delete user, userId=${id}.`);
         await this.repository.delete({ id });
         this.logger.log('Delete user request completed.');
+    }
+
+    async findUserByUsername(username: string): Promise<User> {
+        const user = await this.repository.findOneBy({username});
+        if (!user) {
+            this.logger.warn(`User with username=${username} not found.`);
+            throw new Error(`User with username=${username} not found.`);
+        }
+        return user;
     }
 }

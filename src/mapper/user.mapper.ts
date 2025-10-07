@@ -1,20 +1,23 @@
 import { UserResponse } from '../dto/response/user-response.dto';
 import { User } from '../entities/user';
-import { UserRequest } from '../dto/request/user-request.dto';
+import { UserRequest } from '../dto/request/user.request.dto';
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserMapper {
   toResponse(user: User): UserResponse {
-    return new UserResponse(user.username);
+      return new UserResponse(user.username);
   }
 
-  toEntity(request: UserRequest): User {
-    const user = new User();
-    user.username = request.username;
-    user.todos = [];
-    user.createdAt = new Date();
-    user.updatedAt = new Date();
-    return user;
+  async toEntity(request: UserRequest): Promise<User> {
+      const password = await bcrypt.hash(request.password, 10);
+      const user = new User();
+      user.password = password;
+      user.username = request.username;
+      user.todos = [];
+      user.createdAt = new Date();
+      user.updatedAt = new Date();
+      return user;
   }
 }

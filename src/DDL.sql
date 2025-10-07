@@ -3,6 +3,7 @@ CREATE TABLE `users` (
                          `username` VARCHAR(255) NOT NULL,
                          `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                         `password` varchar(255) not null,
                          PRIMARY KEY (`id`)
 );
 

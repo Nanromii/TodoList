@@ -4,21 +4,23 @@ import { UsersModule } from './users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user';
 import { Todo } from '../entities/todo';
+import { AuthModule } from './auth.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'nam9mgchanh',
-      database: 'todolist',
-      entities: [User, Todo],
-      logging: true
-    }),
-    TodosModule,
-    UsersModule
-  ],
+    imports: [
+        TypeOrmModule.forRoot({
+            type: 'mysql',
+            host: 'localhost',
+            port: 3306,
+            username: 'root',
+            password: 'nam9mgchanh',
+            database: 'todolist',
+            entities: [User, Todo],
+            logging: true
+        }),
+        TodosModule,
+        UsersModule,
+        AuthModule
+    ],
 })
 export class AppModule {}
