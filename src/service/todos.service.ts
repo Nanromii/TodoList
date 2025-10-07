@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Todo } from '../entities/todo';
+import { Todo } from '../entity/todo.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TodoMapper } from '../mapper/todo.mapper';
 import { CreateTodoRequest } from '../dto/request/create-todo.request';
@@ -8,7 +8,7 @@ import { TodoResponse } from '../dto/response/todo.response';
 import { PageResponse } from '../dto/response/page.response';
 import { Pagination } from '../utils/pagination.utils';
 import { UpdateTodoRequest } from '../dto/request/update-todo.request';
-import { User } from '../entities/user';
+import { User } from '../entity/user.entity';
 
 @Injectable()
 export class TodosService {

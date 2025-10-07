@@ -52,7 +52,7 @@ export class TodosController {
         try {
             const todo = await this.todoService.findOne(id);
             if (!todo) {
-                throw new HttpException('Todo not found', HttpStatus.NOT_FOUND);
+                throw new HttpException('TodoEntity not found', HttpStatus.NOT_FOUND);
             }
             this.logger.log(`Fetched todo successfully, todoId=${id}.`);
             return new ApiResponse('Fetched todo successfully.', todo);

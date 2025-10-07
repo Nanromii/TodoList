@@ -13,7 +13,7 @@ export class AuthService {
 
     async login(username: string, password: string): Promise<TokenResponse> {
         const user = await this.userService.findUserByUsername(username);
-        if (!user) throw new UnauthorizedException('User not found');
+        if (!user) throw new UnauthorizedException('UserEntity not found');
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new UnauthorizedException('Invalid password');
         const payload = { username: user.username };

@@ -2,11 +2,14 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Todo } from './todo';
+import { Todo } from './todo.entity';
+import { Role } from './role.entity';
 
 @Entity('users')
 export class User {
@@ -27,4 +30,14 @@ export class User {
 
     @OneToMany(() => Todo, (todo) => todo.user)
     todos: Todo[];
+
+    @ManyToMany(() => Role, (role) => role.users, {
+        cascade: ['insert', 'update'],
+    })
+    @JoinTable({
+        name: 'users_roles_roles',
+        joinColumns: [{ name: 'usersId', referencedColumnName: 'id' }],
+        inverseJoinColumns: [{ name: 'rolesId', referencedColumnName: 'id' }],
+    })
+    roles: Role[];
 }

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UserMapper } from '../mapper/user.mapper';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user';
+import { User } from '../entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRequest } from '../dto/request/user.request.dto';
 import { UserResponse } from '../dto/response/user-response.dto';

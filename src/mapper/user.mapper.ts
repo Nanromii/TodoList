@@ -1,5 +1,5 @@
 import { UserResponse } from '../dto/response/user-response.dto';
-import { User } from '../entities/user';
+import { User } from '../entity/user.entity';
 import { UserRequest } from '../dto/request/user.request.dto';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +16,7 @@ export class UserMapper {
       user.password = password;
       user.username = request.username;
       user.todos = [];
+      user.roles = [];
       user.createdAt = new Date();
       user.updatedAt = new Date();
       return user;
