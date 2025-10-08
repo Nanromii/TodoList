@@ -10,12 +10,16 @@ import {
     ParseIntPipe,
     Post,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import { RoleService } from '../service/roles.service';
 import { CreateRoleRequest } from '../dto/request/create-role.request';
 import { ApiResponse } from '../dto/response/api.response';
 import { RoleResponse } from '../dto/response/role.response';
 import { PageResponse } from '../dto/response/page.response';
+import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard.utils';
+import { RoleGuard } from '../utils/guard/has-role.guard.utils';
+import { Roles } from '../utils/decorator/has-role.decorator.utils';
 
 @Controller('roles')
 export class RoleController {
@@ -23,6 +27,8 @@ export class RoleController {
 
     constructor(private readonly roleService: RoleService) {}
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Post()
     async create(@Body() request: CreateRoleRequest): Promise<ApiResponse<number>> {
         this.logger.log(`Request create role, name=${request.name}.`);
@@ -38,6 +44,8 @@ export class RoleController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Delete(':id')
     async remove(
         @Param('id', ParseIntPipe) id: number,
@@ -55,6 +63,8 @@ export class RoleController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<RoleResponse>> {
         this.logger.log(`Request fetch information of role, id=${id}.`);
@@ -70,6 +80,8 @@ export class RoleController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Get()
     async findAll(
         @Query('page', ParseIntPipe) page: number,

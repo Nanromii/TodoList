@@ -12,6 +12,7 @@ import {
     Logger,
     ParseIntPipe,
     Patch,
+    UseGuards,
 } from '@nestjs/common';
 import { TodosService } from '../service/todos.service';
 import { CreateTodoRequest } from '../dto/request/create-todo.request';
@@ -19,6 +20,9 @@ import { UpdateTodoRequest } from '../dto/request/update-todo.request';
 import { TodoResponse } from '../dto/response/todo.response';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
+import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard.utils';
+import { RoleGuard } from '../utils/guard/has-role.guard.utils';
+import { Roles } from '../utils/decorator/has-role.decorator.utils';
 
 @Controller('todos')
 export class TodosController {
@@ -44,6 +48,8 @@ export class TodosController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Get('/:id')
     async findOne(
         @Param('id', ParseIntPipe) id: number,
@@ -66,6 +72,8 @@ export class TodosController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Get()
     async findAll(
         @Query('page', ParseIntPipe) page = 1,
@@ -86,6 +94,8 @@ export class TodosController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Put('/:id')
     async update(
         @Param('id', ParseIntPipe) id: number,
@@ -105,6 +115,8 @@ export class TodosController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Patch('/:id/complete')
     async markAsComplete(
         @Param('id', ParseIntPipe) id: number,
@@ -123,6 +135,8 @@ export class TodosController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Delete('/:id')
     async remove(
         @Param('id', ParseIntPipe) id: number,

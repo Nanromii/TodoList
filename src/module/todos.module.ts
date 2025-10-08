@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Todo } from '../entity/todo.entity';
 import { User } from '../entity/user.entity';
 import { TodoMapper } from '../mapper/todo.mapper';
+import { UsersModule } from './users.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Todo, User])],
+    imports: [TypeOrmModule.forFeature([Todo, User]), UsersModule],
     providers: [TodosService, TodoMapper],
     controllers: [TodosController],
 })

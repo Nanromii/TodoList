@@ -58,7 +58,9 @@ export class UsersController {
         }
     }
 
-    @Get('/:id')
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
+    @Get(':id')
     async findOne(
         @Param('id', ParseIntPipe) id: number,
     ): Promise<ApiResponse<UserResponse>> {
@@ -78,6 +80,8 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Get()
     async findAll(
         @Query('page') page?: string,
@@ -100,6 +104,8 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Delete(':id')
     async remove(
         @Param('id', ParseIntPipe) id: number,
@@ -117,6 +123,8 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Patch(':userId/roles/:roleId')
     async linkRole(
         @Param('userId', ParseIntPipe) userId: number,
@@ -135,6 +143,8 @@ export class UsersController {
         }
     }
 
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles('ADMIN')
     @Delete(':userId/roles/:roleId')
     async unlinkRole(
         @Param('userId', ParseIntPipe) userId: number,

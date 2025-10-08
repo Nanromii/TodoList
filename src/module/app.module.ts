@@ -30,5 +30,6 @@ import { RolesModule } from './roles.module';
         AuthModule,
         RolesModule
     ],
+    providers: [],
 })
 export class AppModule {}
