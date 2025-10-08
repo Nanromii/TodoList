@@ -2,7 +2,6 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    JoinTable,
     ManyToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -26,11 +25,6 @@ export class Role {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToMany(() => User, user => user.roles, { cascade: true })
-    @JoinTable({
-        name: 'users_roles_roles',
-        joinColumn: { name: 'rolesId', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'usersId', referencedColumnName: 'id' },
-    })
+    @ManyToMany(() => User, user => user.roles)
     users: User[];
 }

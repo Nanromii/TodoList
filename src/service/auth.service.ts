@@ -16,7 +16,10 @@ export class AuthService {
         if (!user) throw new UnauthorizedException('UserEntity not found');
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new UnauthorizedException('Invalid password');
-        const payload = { username: user.username };
+        const payload = {
+            username: user.username,
+            role: user.roles.map(r => r.name)
+        };
         const token = await this.jwtService.signAsync(payload);
         return new TokenResponse(token);
     }

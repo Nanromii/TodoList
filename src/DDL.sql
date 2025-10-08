@@ -32,3 +32,7 @@ CREATE TABLE `roles`
     `updatedAt`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
+
+select * from roles;
+select * from users;
+select * from users_roles_roles;

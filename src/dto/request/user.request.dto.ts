@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
-import { IsStrongPasswordDecorator } from '../../utils/decorator/strongpassword-decorator.utils';
+import { IsStrongPasswordDecorator } from '../../utils/decorator/is-strong-password.decorator.utils';
 
 export class UserRequest {
     @MaxLength(50, {

@@ -31,9 +31,7 @@ export class User {
     @OneToMany(() => Todo, (todo) => todo.user)
     todos: Todo[];
 
-    @ManyToMany(() => Role, (role) => role.users, {
-        cascade: ['insert', 'update'],
-    })
+    @ManyToMany(() => Role, (role) => role.users, {cascade: true, eager: true})
     @JoinTable({
         name: 'users_roles_roles',
         joinColumns: [{ name: 'usersId', referencedColumnName: 'id' }],

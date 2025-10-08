@@ -7,6 +7,7 @@ import { UserRequest } from '../dto/request/user.request.dto';
 import { UserResponse } from '../dto/response/user-response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { Pagination } from '../utils/pagination.utils';
+import { Role } from '../entity/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,8 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly repository: Repository<User>,
+        @InjectRepository(Role)
+        private readonly roleRepository: Repository<Role>,
         private readonly mapper: UserMapper,
     ) {}
 
@@ -54,6 +57,50 @@ export class UsersService {
         this.logger.log(`Starting delete user, userId=${id}.`);
         await this.repository.delete({ id });
         this.logger.log('Delete user request completed.');
+    }
+
+    async linkRole(userId: number, roleId: number): Promise<void> {
+        this.logger.log(`Starting link role for user, userId=${userId}, roleId=${roleId}.`);
+        const user = await this.findUserById(userId);
+        const role = await this.findRoleById(roleId);
+        if (!user.roles) user.roles = [];
+        if (!role.users) role.users = [];
+        user.roles.push(role);
+        role.users.push(user);
+        await this.roleRepository.save(role);
+        this.logger.log(`Linked role for user successfully.`);
+    }
+
+    async unlinkRole(userId: number, roleId: number): Promise<void> {
+        this.logger.log(`Starting unlink role for user, userId=${userId}, roleId=${roleId}.`);
+        const user = await this.findUserById(userId);
+        const role = await this.findRoleById(roleId);
+        if (user.roles) {
+            user.roles = user.roles.filter(r => r.id !== role.id);
+        }
+        if (role.users) {
+            role.users = role.users.filter(u => u.id !== user.id);
+        }
+        await this.roleRepository.save(role);
+        this.logger.log(`Unlinked role for user successfully.`);
+    }
+
+    async findRoleById(roleId: number): Promise<Role> {
+        const role = await this.roleRepository.findOneBy({id: roleId});
+        if (!role) {
+            this.logger.warn(`Role with id=${roleId} not found.`);
+            throw new Error(`Role with id=${roleId} not found.`);
+        }
+        return role;
+    }
+
+    async findUserById(userId: number): Promise<User> {
+        const user = await this.repository.findOneBy({id: userId});
+        if (!user) {
+            this.logger.warn(`User with id=${userId} not found.`);
+            throw new Error(`User with id=${userId} not found.`);
+        }
+        return user;
     }
 
     async findUserByUsername(username: string): Promise<User> {

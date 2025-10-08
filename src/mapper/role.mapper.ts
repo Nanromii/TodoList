@@ -3,7 +3,7 @@ import { RoleResponse } from '../dto/response/role.response';
 import { CreateRoleRequest } from '../dto/request/create-role.request';
 
 export class RoleMapper {
-    async toResponse(entity: Role): Promise<RoleResponse> {
+    toResponse(entity: Role): RoleResponse {
         return new RoleResponse(entity.name, entity.description);
     }
 
