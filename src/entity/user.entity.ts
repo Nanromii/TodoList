@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Todo } from './todo.entity';
 import { Role } from './role.entity';
+import { RefreshToken } from './refresh-token.entity';
 
 @Entity('users')
 export class User {
@@ -28,14 +29,17 @@ export class User {
     @Column()
     password: string;
 
-    @OneToMany(() => Todo, (todo) => todo.user)
+    @OneToMany(() => Todo, todo => todo.user, {eager: true})
     todos: Todo[];
 
-    @ManyToMany(() => Role, (role) => role.users, {cascade: true, eager: true})
+    @ManyToMany(() => Role, role => role.users, {cascade: true, eager: true})
     @JoinTable({
         name: 'users_roles_roles',
         joinColumns: [{ name: 'usersId', referencedColumnName: 'id' }],
         inverseJoinColumns: [{ name: 'rolesId', referencedColumnName: 'id' }],
     })
     roles: Role[];
+
+    @OneToMany(() => RefreshToken, r => r.user, {eager: true})
+    refreshTokens: RefreshToken[];
 }

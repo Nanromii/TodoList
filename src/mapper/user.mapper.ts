@@ -17,6 +17,7 @@ export class UserMapper {
       user.username = request.username;
       user.todos = [];
       user.roles = [];
+      user.refreshTokens = [];
       user.createdAt = new Date();
       user.updatedAt = new Date();
       return user;

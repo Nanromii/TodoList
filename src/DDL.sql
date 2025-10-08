@@ -33,6 +33,23 @@ CREATE TABLE `roles`
     PRIMARY KEY (`id`)
 );
 
-select * from roles;
-select * from users;
-select * from users_roles_roles;
+CREATE TABLE `refreshToken`
+(
+    `refreshToken` VARCHAR(255) NOT NULL,
+    `userId`       INTEGER      NOT NULL,
+    `createdAt`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`refreshToken`),
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+show tables;
+select * from refreshToken;
+select *
+from roles;
+select *
+from users;
+select *
+from users_roles_roles;

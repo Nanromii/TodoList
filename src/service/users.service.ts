@@ -8,6 +8,8 @@ import { UserResponse } from '../dto/response/user-response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { Pagination } from '../utils/pagination.utils';
 import { Role } from '../entity/role.entity';
+import { RefreshToken } from '../entity/refresh-token.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +20,8 @@ export class UsersService {
         private readonly repository: Repository<User>,
         @InjectRepository(Role)
         private readonly roleRepository: Repository<Role>,
+        @InjectRepository(RefreshToken)
+        private readonly refreshTokenRepository: Repository<RefreshToken>,
         private readonly mapper: UserMapper,
     ) {}
 
@@ -110,5 +114,15 @@ export class UsersService {
             throw new Error(`User with username=${username} not found.`);
         }
         return user;
+    }
+
+    async saveRefreshToken(token: string, username: string): Promise<void> {
+        const user = await this.findUserByUsername(username);
+        const refreshToken = new RefreshToken();
+        refreshToken.refreshToken = await bcrypt.hash(token, 10);
+        refreshToken.createdAt = new Date();
+        refreshToken.updatedAt = new Date();
+        refreshToken.user = user;
+        await this.refreshTokenRepository.save(refreshToken);
     }
 }

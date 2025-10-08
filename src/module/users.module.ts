@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entity/user.entity';
 import { UserMapper } from '../mapper/user.mapper';
 import { Role } from '../entity/role.entity';
+import { RefreshToken } from '../entity/refresh-token.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Role])],
+    imports: [TypeOrmModule.forFeature([User, Role, RefreshToken])],
     providers: [UsersService, UserMapper],
     controllers: [UsersController],
     exports: [UsersService, UserMapper]
