@@ -4,12 +4,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { TokenResponse } from '../dto/response/token.response';
 import { TokenRequest } from '../dto/request/token.request';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly configServie: ConfigService
     ) {}
 
     async login(username: string, password: string): Promise<TokenResponse> {
@@ -23,7 +25,7 @@ export class AuthService {
         };
         const accessToken = await this.jwtService.signAsync(payload);
         const refreshToken = await this.jwtService.signAsync(payload, {
-            expiresIn: '7d'
+            expiresIn: this.configServie.get<string>('EXPIRY_TIME_REFRESH_TOKEN'),
         });
         await this.userService.saveRefreshToken(refreshToken, username);
         return new TokenResponse(accessToken, refreshToken);
@@ -46,7 +48,7 @@ export class AuthService {
         };
         const newAccessToken = await this.jwtService.signAsync(payload);
         const newRefreshToken = await this.jwtService.signAsync(payload, {
-            expiresIn: '7d',
+            expiresIn: this.configServie.get<string>('EXPIRY_TIME_REFRESH_TOKEN'),
         });
         await this.userService.saveRefreshToken(newRefreshToken, user.username);
         return new TokenResponse(newAccessToken, newRefreshToken);

@@ -1,4 +1,4 @@
-import { UserResponse } from '../dto/response/user-response.dto';
+import { UserResponse } from '../dto/response/user.response.dto';
 import { User } from '../entity/user.entity';
 import { UserRequest } from '../dto/request/user.request.dto';
 import { Injectable } from '@nestjs/common';
@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserMapper {
   toResponse(user: User): UserResponse {
-      return new UserResponse(user.username);
+      return new UserResponse(user.username, user.email);
   }
 
   async toEntity(request: UserRequest): Promise<User> {
@@ -15,6 +15,7 @@ export class UserMapper {
       const user = new User();
       user.password = password;
       user.username = request.username;
+      user.email = request.email;
       user.todos = [];
       user.roles = [];
       user.refreshTokens = [];

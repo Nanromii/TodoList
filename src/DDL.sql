@@ -45,6 +45,7 @@ CREATE TABLE `refreshToken`
         ON UPDATE CASCADE
 );
 
+desc users;
 show tables;
 select * from refreshToken;
 select *

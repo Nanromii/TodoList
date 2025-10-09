@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserRequest } from '../dto/request/user.request.dto';
-import { UserResponse } from '../dto/response/user-response.dto';
+import { UserResponse } from '../dto/response/user.response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
 import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard.utils';

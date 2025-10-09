@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRequest } from '../dto/request/user.request.dto';
-import { UserResponse } from '../dto/response/user-response.dto';
+import { UserResponse } from '../dto/response/user.response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { Pagination } from '../utils/pagination.utils';
 import { Role } from '../entity/role.entity';

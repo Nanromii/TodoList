@@ -5,31 +5,37 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entity/user.entity';
 import { Todo } from '../entity/todo.entity';
 import { AuthModule } from './auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Role } from '../entity/role.entity';
 import { RolesModule } from './roles.module';
 import { RefreshToken } from '../entity/refresh-token.entity';
+import { EmailModule } from './email.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
-            isGlobal: true
+            isGlobal: true,
+            envFilePath: '.env',
         }),
-        TypeOrmModule.forRoot({
-            type: 'mysql',
-            host: process.env.DB_HOST,
-            port: Number(process.env.DB_PORT),
-            username: process.env.DB_USERNAME,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_DATABASE,
-            entities: [User, Todo, Role, RefreshToken],
-            autoLoadEntities: true,
-            synchronize: true,
+        TypeOrmModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                type: 'mysql',
+                host: config.get<string>('DB_HOST'),
+                port: +config.get('DB_PORT'),
+                username: config.get<string>('DB_USERNAME'),
+                password: config.get<string>('DB_PASSWORD'),
+                database: config.get<string>('DB_DATABASE'),
+                entities: [User, Todo, Role, RefreshToken],
+                autoLoadEntities: true,
+                synchronize: true,
+            }),
         }),
         TodosModule,
         UsersModule,
         AuthModule,
-        RolesModule
+        RolesModule,
+        EmailModule
     ],
     providers: [],
 })

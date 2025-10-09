@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { IsStrongPasswordDecorator } from '../../utils/decorator/is-strong-password.decorator.utils';
 
 export class UserRequest {
@@ -16,6 +16,9 @@ export class UserRequest {
 
     @IsStrongPasswordDecorator()
     password: string;
+
+    @IsEmail()
+    email: string;
 
     constructor(username: string, password: string) {
         this.username = username;
