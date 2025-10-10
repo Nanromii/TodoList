@@ -11,6 +11,7 @@ import { RolesModule } from './roles.module';
 import { RefreshToken } from '../entity/refresh-token.entity';
 import { EmailModule } from './email.module';
 import { BullModule } from '@nestjs/bullmq';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { BullModule } from '@nestjs/bullmq';
                 synchronize: true,
             }),
         }),
+        ScheduleModule.forRoot(),
         TodosModule,
         UsersModule,
         AuthModule,

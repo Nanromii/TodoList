@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UserMapper } from '../mapper/user.mapper';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRequest } from '../dto/request/user.request.dto';
@@ -10,6 +10,7 @@ import { Pagination } from '../utils/pagination.utils';
 import { Role } from '../entity/role.entity';
 import { RefreshToken } from '../entity/refresh-token.entity';
 import * as bcrypt from 'bcrypt';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UsersService {
@@ -124,5 +125,15 @@ export class UsersService {
         refreshToken.updatedAt = new Date();
         refreshToken.user = user;
         await this.refreshTokenRepository.save(refreshToken);
+    }
+
+    @Cron('0 0 * * *')
+    async cleanExpiryToken(): Promise<void> {
+        this.logger.log(`Deleted expiry token in database.`);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        await this.refreshTokenRepository.delete({
+            createdAt: LessThan(sevenDaysAgo),
+        });
     }
 }
