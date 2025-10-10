@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import { SendEmailRequest } from '../dto/request/send-email.request';
 
 @Injectable()
 export class EmailService {
@@ -19,13 +18,13 @@ export class EmailService {
         });
     }
 
-    async sendEmail(request: SendEmailRequest): Promise<void> {
+    async sendEmail(to: string, subject: string, text: string): Promise<void> {
         this.logger.log('Starting send email.');
         await this.emailSender.sendMail({
             from: this.configService.get<string>('EMAIL_USER'),
-            to: request.recipients,
-            subject: request.subject,
-            text: request.content,
+            to: to,
+            subject: subject,
+            text: text,
         });
         this.logger.log(`Sent successfully.`)
     }

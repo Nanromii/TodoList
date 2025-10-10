@@ -17,8 +17,8 @@ import { CreateRoleRequest } from '../dto/request/create-role.request';
 import { ApiResponse } from '../dto/response/api.response';
 import { RoleResponse } from '../dto/response/role.response';
 import { PageResponse } from '../dto/response/page.response';
-import { JwtAuthGuard } from '../guard/jwt-auth.guard.utils';
-import { RoleGuard } from '../guard/has-role.guard.utils';
+import { JwtAuthGuard } from '../guard/jwt-auth.guard';
+import { RoleGuard } from '../guard/has-role.guard';
 import { Roles } from '../utils/decorator/has-role.decorator.utils';
 
 @Controller('roles')

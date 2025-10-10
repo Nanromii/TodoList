@@ -6,25 +6,35 @@ import {
     Logger,
     Post,
 } from '@nestjs/common';
-import { EmailService } from '../service/email.service';
 import { SendEmailRequest } from '../dto/request/send-email.request';
 import { ApiResponse } from '../dto/response/api.response';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Controller('email')
 export class EmailController {
     private readonly logger = new Logger(EmailController.name);
-    constructor(private readonly emailService: EmailService) {}
+    constructor(
+        @InjectQueue('emailQueue')
+        private readonly emailQueue: Queue
+    ) {}
 
     @Post('send')
     async send(@Body() request: SendEmailRequest): Promise<ApiResponse<void>> {
         this.logger.log('Request send email.');
         try {
-            await this.emailService.sendEmail(request);
-            return new ApiResponse(`Sent successfully.`);
+            const { recipients, subject, content } = request;
+            for (const recipient of recipients) {
+                await this.emailQueue.add(
+                    'sendEmail',
+                    { recipient, subject, content }
+                );
+            }
+            return new ApiResponse(`Queued successfully.`);
         } catch (error) {
-            this.logger.error(`Failed to send email: ${error.message}`, error.stack);
+            this.logger.error(`Failed to put email to queue: ${error.message}`, error.stack);
             throw new HttpException(
-                new ApiResponse(`Failed to send email: ${error.message}`),
+                new ApiResponse(`Failed to put email to queue: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
