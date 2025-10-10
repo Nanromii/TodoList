@@ -20,8 +20,8 @@ import { UpdateTodoRequest } from '../dto/request/update-todo.request';
 import { TodoResponse } from '../dto/response/todo.response';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
-import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard.utils';
-import { RoleGuard } from '../utils/guard/has-role.guard.utils';
+import { JwtAuthGuard } from '../guard/jwt-auth.guard.utils';
+import { RoleGuard } from '../guard/has-role.guard.utils';
 import { Roles } from '../utils/decorator/has-role.decorator.utils';
 
 @Controller('todos')

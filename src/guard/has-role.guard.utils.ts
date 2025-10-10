@@ -5,9 +5,9 @@ import {
     Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorator/has-role.decorator.utils';
+import { ROLES_KEY } from '../utils/decorator/has-role.decorator.utils';
 import type { Request } from 'express';
-import { UsersService } from '../../service/users.service';
+import { UsersService } from '../service/users.service';
 
 @Injectable()
 export class RoleGuard implements CanActivate {

@@ -16,9 +16,9 @@ import { UserRequest } from '../dto/request/user.request.dto';
 import { UserResponse } from '../dto/response/user.response.dto';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
-import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard.utils';
+import { JwtAuthGuard } from '../guard/jwt-auth.guard.utils';
 import type { Request } from 'express';
-import { RoleGuard } from '../utils/guard/has-role.guard.utils';
+import { RoleGuard } from '../guard/has-role.guard.utils';
 import { Roles } from '../utils/decorator/has-role.decorator.utils';
 
 @Controller('users')
