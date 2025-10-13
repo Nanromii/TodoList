@@ -18,14 +18,20 @@ export class EmailService {
         });
     }
 
-    async sendEmail(to: string, subject: string, text: string): Promise<void> {
+    async sendEmail(
+        to: string,
+        subject: string,
+        text: string,
+        attachments?: { filename: string; content: Buffer }[],
+    ): Promise<void> {
         this.logger.log('Starting send email.');
         await this.emailSender.sendMail({
             from: this.configService.get<string>('EMAIL_USER'),
-            to: to,
-            subject: subject,
-            text: text,
+            to,
+            subject,
+            text,
+            attachments,
         });
-        this.logger.log(`Sent successfully.`)
+        this.logger.log('Sent successfully.');
     }
 }

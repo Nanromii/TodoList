@@ -5,11 +5,13 @@ import {
     HttpStatus,
     Logger,
     Post,
+    UploadedFiles,
+    UseInterceptors,
 } from '@nestjs/common';
-import { SendEmailRequest } from '../dto/request/send-email.request';
 import { ApiResponse } from '../dto/response/api.response';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('email')
 export class EmailController {
@@ -20,14 +22,25 @@ export class EmailController {
     ) {}
 
     @Post('send')
-    async send(@Body() request: SendEmailRequest): Promise<ApiResponse<void>> {
+    @UseInterceptors(FilesInterceptor('files'))
+    async send(
+        @Body('recipients') recipients: string,
+        @Body('subject') subject: string,
+        @Body('content') content: string,
+        @UploadedFiles() files: Express.Multer.File[]
+    ): Promise<ApiResponse<void>> {
         this.logger.log('Request send email.');
         try {
-            const { recipients, subject, content } = request;
-            for (const recipient of recipients) {
+            const attachments = files?.map((file) => ({
+                filename: file.originalname,
+                mimetype: file.mimetype,
+                content: file.buffer.toString('base64'),
+            }));
+            for (const recipient of recipients.trim().split(",")) {
+                const to = recipient.trim();
                 await this.emailQueue.add(
                     'sendEmail',
-                    { recipient, subject, content }
+                    { to, subject, content, attachments }
                 );
             }
             return new ApiResponse(`Queued successfully.`);

@@ -11,22 +11,22 @@ export class EmailWorker extends WorkerHost {
     }
 
     async process(job: Job): Promise<void> {
-        const { recipient, subject, content } = job.data;
-        await this.emailService.sendEmail(recipient, subject, content);
+        const { to, subject, content, attachments } = job.data;
+        await this.emailService.sendEmail(to, subject, content, attachments);
     }
 
     @OnWorkerEvent('active')
-    onActive(job: Job) {
-        this.logger.log(`Job #${job.id} started (to: ${job.data.recipient})`);
+    onActive(job: Job): void {
+        this.logger.log(`Job #${job.id} started (to: ${job.data.to})`);
     }
 
     @OnWorkerEvent('completed')
-    onCompleted(job: Job) {
-        this.logger.log(`Job #${job.id} completed (to: ${job.data.recipient})`);
+    onCompleted(job: Job): void {
+        this.logger.log(`Job #${job.id} completed (to: ${job.data.to})`);
     }
 
     @OnWorkerEvent('failed')
-    onFailed(job: Job, err: Error) {
+    onFailed(job: Job, err: Error): void {
         this.logger.error(`Job #${job.id} failed: ${err.message}`);
     }
 }

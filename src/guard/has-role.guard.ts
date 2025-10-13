@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../utils/decorator/has-role.decorator.utils';
 import type { Request } from 'express';
 import { UsersService } from '../service/users.service';
+import { User } from '../entity/user.entity';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -28,15 +29,16 @@ export class RoleGuard implements CanActivate {
         );
         const request: Request = context.switchToHttp().getRequest();
         const infor = request.user as { id: number; username: string; roles?: string[] };
-        const id = request.params['id'] || request.params['userId'];
+        const id: string = request.params['id'] || request.params['userId'];
 
         if (!infor || !id) throw new ForbiddenException('User not authenticated.');
         if (infor.roles?.includes('ADMIN')) return true;
         if (!requiredRoles || requiredRoles.length === 0) return true;
 
-        const user = await this.userService.findUserById(Number(id));
+        const user: User = await this.userService.findUserById(Number(id));
         if (infor.username === user.username) return true;
         if (!infor.roles) return true;
-        return infor.roles.some(role => requiredRoles.includes(role));
+        return infor.roles.some((role: string): boolean => requiredRoles.includes(role));
+        //return true;
     }
 }

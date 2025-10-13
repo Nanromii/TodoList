@@ -25,7 +25,9 @@ import { Roles } from '../utils/decorator/has-role.decorator.utils';
 export class RoleController {
     private readonly logger = new Logger(RoleController.name);
 
-    constructor(private readonly roleService: RoleService) {}
+    constructor(
+        private readonly roleService: RoleService,
+    ) {}
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles('ADMIN')

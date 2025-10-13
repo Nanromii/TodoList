@@ -12,6 +12,8 @@ import { RefreshToken } from '../entity/refresh-token.entity';
 import { EmailModule } from './email.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CaslModule } from './casl.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
     imports: [
@@ -48,11 +50,15 @@ import { ScheduleModule } from '@nestjs/schedule';
             }),
         }),
         ScheduleModule.forRoot(),
+        MulterModule.register({
+            dest: './uploads'
+        }),
         TodosModule,
         UsersModule,
         AuthModule,
         RolesModule,
-        EmailModule
+        EmailModule,
+        CaslModule
     ],
     providers: [],
 })
