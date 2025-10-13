@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UserMapper } from '../mapper/user.mapper';
 import { LessThan, Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
@@ -11,6 +11,8 @@ import { Role } from '../entity/role.entity';
 import { RefreshToken } from '../entity/refresh-token.entity';
 import * as bcrypt from 'bcrypt';
 import { Cron } from '@nestjs/schedule';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type {Cache} from 'cache-manager';
 
 @Injectable()
 export class UsersService {
@@ -23,25 +25,29 @@ export class UsersService {
         private readonly roleRepository: Repository<Role>,
         @InjectRepository(RefreshToken)
         private readonly refreshTokenRepository: Repository<RefreshToken>,
+        @Inject(CACHE_MANAGER)
+        private readonly cache: Cache,
         private readonly mapper: UserMapper,
     ) {}
 
     async create(request: UserRequest): Promise<number> {
         this.logger.log(`Starting create user, username=${request.username}.`);
-        const user = await this.repository.findOneBy({username : request.username});
+        const user = await this.repository.findOneBy({
+            username: request.username,
+        });
         if (user != null) {
             this.logger.warn(`User with ${request.username} already exists.`);
             throw new Error(`User with ${request.username} already exists.`);
         }
         const entity = await this.mapper.toEntity(request);
         const curUser = await this.repository.save(entity);
-        this.logger.log("Created user successfully.")
+        this.logger.log('Created user successfully.');
         return curUser.id;
     }
 
     async findOne(id: number): Promise<UserResponse> {
         this.logger.log(`Starting fetch information of user, userId=${id}.`);
-        const user = await this.repository.findOneBy({ id });
+        const user = await this.findUserById(id);
         if (!user) {
             this.logger.warn(`User with id=${id} not found.`);
             throw new Error(`User with id=${id} not found.`);
@@ -50,12 +56,21 @@ export class UsersService {
         return this.mapper.toResponse(user);
     }
 
-    findAll(page: number = 1, limit: number = 10, sort?: string[]): Promise<PageResponse<UserResponse>> {
-        this.logger.log("Starting fetch information of all users.");
+    findAll(
+        page: number = 1,
+        limit: number = 10,
+        sort?: string[],
+    ): Promise<PageResponse<UserResponse>> {
+        this.logger.log('Starting fetch information of all users.');
         const queryBuilder = this.repository.createQueryBuilder('user');
         Pagination.applySort(queryBuilder, sort, 'user');
-        this.logger.log("Fetched information of all users successfully.");
-        return Pagination.paginate<User, UserResponse>(queryBuilder, page, limit, (u) => this.mapper.toResponse(u));
+        this.logger.log('Fetched information of all users successfully.');
+        return Pagination.paginate<User, UserResponse>(
+            queryBuilder,
+            page,
+            limit,
+            (u) => this.mapper.toResponse(u),
+        );
     }
 
     async remove(id: number): Promise<void> {
@@ -65,7 +80,9 @@ export class UsersService {
     }
 
     async linkRole(userId: number, roleId: number): Promise<void> {
-        this.logger.log(`Starting link role for user, userId=${userId}, roleId=${roleId}.`);
+        this.logger.log(
+            `Starting link role for user, userId=${userId}, roleId=${roleId}.`,
+        );
         const user = await this.findUserById(userId);
         const role = await this.findRoleById(roleId);
         if (!user.roles) user.roles = [];
@@ -77,21 +94,23 @@ export class UsersService {
     }
 
     async unlinkRole(userId: number, roleId: number): Promise<void> {
-        this.logger.log(`Starting unlink role for user, userId=${userId}, roleId=${roleId}.`);
+        this.logger.log(
+            `Starting unlink role for user, userId=${userId}, roleId=${roleId}.`,
+        );
         const user = await this.findUserById(userId);
         const role = await this.findRoleById(roleId);
         if (user.roles) {
-            user.roles = user.roles.filter(r => r.id !== role.id);
+            user.roles = user.roles.filter((r) => r.id !== role.id);
         }
         if (role.users) {
-            role.users = role.users.filter(u => u.id !== user.id);
+            role.users = role.users.filter((u) => u.id !== user.id);
         }
         await this.roleRepository.save(role);
         this.logger.log(`Unlinked role for user successfully.`);
     }
 
     async findRoleById(roleId: number): Promise<Role> {
-        const role = await this.roleRepository.findOneBy({id: roleId});
+        const role = await this.roleRepository.findOneBy({ id: roleId });
         if (!role) {
             this.logger.warn(`Role with id=${roleId} not found.`);
             throw new Error(`Role with id=${roleId} not found.`);
@@ -100,16 +119,24 @@ export class UsersService {
     }
 
     async findUserById(userId: number): Promise<User> {
-        const user = await this.repository.findOneBy({id: userId});
+        const cached: User | undefined = await this.cache.get(`user:${userId}`);
+        if (cached) {
+            return cached;
+        }
+        const user = await this.repository.findOneBy({ id: userId });
+        await this.cache.set(`user:${userId}`, user, 60000);
         if (!user) {
-            this.logger.warn(`User with id=${userId} not found.`);
-            throw new Error(`User with id=${userId} not found.`);
+            this.logger.warn(`User with userId=${userId} not found.`);
+            throw new Error(`User with userId=${userId} not found.`);
         }
         return user;
     }
 
     async findUserByUsername(username: string): Promise<User> {
-        const user = await this.repository.findOneBy({username});
+        const cached: User | undefined = await this.cache.get(`user:${username}`);
+        if (cached) return cached;
+        const user = await this.repository.findOneBy({ username });
+        await this.cache.set(`user:${username}`, user, 60000);
         if (!user) {
             this.logger.warn(`User with username=${username} not found.`);
             throw new Error(`User with username=${username} not found.`);

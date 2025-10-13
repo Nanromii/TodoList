@@ -14,6 +14,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CaslModule } from './casl.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
     imports: [
@@ -26,13 +28,13 @@ import { MulterModule } from '@nestjs/platform-express';
             useFactory: (config: ConfigService) => ({
                 connection: {
                     host: config.get<string>('REDIS_HOST'),
-                    port: config.get<number>('REDIS_PORT')
+                    port: config.get<number>('REDIS_PORT'),
                 },
                 defaultJobOptions: {
                     attempts: 3,
-                    removeOnFail: 1000,
-                    removeOnComplete: 1000
-                }
+                    removeOnFail: 10,
+                    removeOnComplete: 10,
+                },
             }),
         }),
         TypeOrmModule.forRootAsync({
@@ -51,14 +53,22 @@ import { MulterModule } from '@nestjs/platform-express';
         }),
         ScheduleModule.forRoot(),
         MulterModule.register({
-            dest: './uploads'
+            dest: './uploads',
+        }),
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: async () => {
+                return {
+                    stores: [new KeyvRedis('redis://localhost:6379')],
+                };
+            },
         }),
         TodosModule,
         UsersModule,
         AuthModule,
         RolesModule,
         EmailModule,
-        CaslModule
+        CaslModule,
     ],
     providers: [],
 })

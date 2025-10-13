@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { promises as fs } from 'fs';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class EmailService {
@@ -33,5 +35,15 @@ export class EmailService {
             attachments,
         });
         this.logger.log('Sent successfully.');
+    }
+
+    @Cron('0 0 * * *')
+    async cleanUploads(): Promise<void> {
+        this.logger.log(`Starting clean the Uploads.`);
+        const files = await fs.readdir('./uploads');
+        for (const file of files) {
+            await fs.unlink(`./uploads/${file}`)
+        }
+        this.logger.log(`Cleaned successfully.`);
     }
 }

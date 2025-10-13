@@ -12,42 +12,57 @@ import { ApiResponse } from '../dto/response/api.response';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('email')
 export class EmailController {
     private readonly logger = new Logger(EmailController.name);
     constructor(
         @InjectQueue('emailQueue')
-        private readonly emailQueue: Queue
+        private readonly emailQueue: Queue,
     ) {}
 
     @Post('send')
-    @UseInterceptors(FilesInterceptor('files'))
+    @UseInterceptors(
+        FilesInterceptor('files', 10, {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, cb) =>
+                    cb(null, `${Date.now()}-${file.originalname}`),
+            }),
+        }),
+    )
     async send(
         @Body('recipients') recipients: string,
         @Body('subject') subject: string,
         @Body('content') content: string,
-        @UploadedFiles() files: Express.Multer.File[]
+        @UploadedFiles() files: Express.Multer.File[],
     ): Promise<ApiResponse<void>> {
         this.logger.log('Request send email.');
         try {
             const attachments = files?.map((file) => ({
                 filename: file.originalname,
-                mimetype: file.mimetype,
-                content: file.buffer.toString('base64'),
+                path: file.path,
             }));
-            for (const recipient of recipients.trim().split(",")) {
+            for (const recipient of recipients.trim().split(',')) {
                 const to = recipient.trim();
-                await this.emailQueue.add(
-                    'sendEmail',
-                    { to, subject, content, attachments }
-                );
+                await this.emailQueue.add('sendEmail', {
+                    to,
+                    subject,
+                    content,
+                    attachments,
+                });
             }
             return new ApiResponse(`Queued successfully.`);
         } catch (error) {
-            this.logger.error(`Failed to put email to queue: ${error.message}`, error.stack);
+            this.logger.error(
+                `Failed to put email to queue: ${error.message}`,
+                error.stack,
+            );
             throw new HttpException(
-                new ApiResponse(`Failed to put email to queue: ${error.message}`),
+                new ApiResponse(
+                    `Failed to put email to queue: ${error.message}`,
+                ),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
