@@ -12,7 +12,7 @@ import {
     Logger,
     ParseIntPipe,
     Patch,
-    UseGuards,
+    UseGuards, Req,
 } from '@nestjs/common';
 import { TodosService } from '../service/todos.service';
 import { CreateTodoRequest } from '../dto/request/create-todo.request';
@@ -21,18 +21,26 @@ import { TodoResponse } from '../dto/response/todo.response';
 import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
 import { JwtAuthGuard } from '../guard/jwt-auth.guard';
-import { RoleGuard } from '../guard/has-role.guard';
-import { Roles } from '../utils/decorator/has-role.decorator.utils';
+import { PoliciesGuard } from '../guard/policy-guard';
+import { CheckPolicies } from '../utils/decorator/check-policies';
+import { DeleteTodoPolicyHandler, ManageTodoPolicyHandler, ReadTodoPolicyHandler, UpdateTodoPolicyHandler } from '../utils/policies/impl/todo.policies';
+import { ForbiddenError } from '@casl/ability';
+import { Action } from '../utils/enum/action.enum';
+import { CaslAbilityFactory } from '../casl/casl-ability-factory';
+import type { Request } from 'express';
 
 @Controller('todos')
 export class TodosController {
     private readonly logger = new Logger(TodosController.name);
-    constructor(private readonly todoService: TodosService) {}
+    constructor(
+        private readonly todoService: TodosService,
+        private readonly caslAbilityFactory: CaslAbilityFactory
+    ) {}
 
     @Post('/:userId')
     async create(
         @Param('userId', ParseIntPipe) userId: number,
-        @Body() request: CreateTodoRequest,
+        @Body() request: CreateTodoRequest
     ): Promise<ApiResponse<number>> {
         this.logger.log(`Request create todo for userId=${userId}.`);
         try {
@@ -48,18 +56,20 @@ export class TodosController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ReadTodoPolicyHandler())
     @Get('/:id')
     async findOne(
         @Param('id', ParseIntPipe) id: number,
+        @Req() req: Request,
     ): Promise<ApiResponse<TodoResponse>> {
         this.logger.log(`Request fetch todo, todoId=${id}.`);
         try {
+            const targetTodo = await this.todoService.findTodoById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.READ, targetTodo);
             const todo = await this.todoService.findOne(id);
-            if (!todo) {
-                throw new HttpException('TodoEntity not found', HttpStatus.NOT_FOUND);
-            }
             this.logger.log(`Fetched todo successfully, todoId=${id}.`);
             return new ApiResponse('Fetched todo successfully.', todo);
         } catch (error) {
@@ -72,8 +82,9 @@ export class TodosController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ManageTodoPolicyHandler())
     @Get()
     async findAll(
         @Query('page', ParseIntPipe) page = 1,
@@ -94,15 +105,20 @@ export class TodosController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new UpdateTodoPolicyHandler())
     @Put('/:id')
     async update(
+        @Req() req: Request,
         @Param('id', ParseIntPipe) id: number,
         @Body() request: UpdateTodoRequest,
     ): Promise<ApiResponse<void>> {
         this.logger.log(`Request update todo, todoId=${id}.`);
         try {
+            const targetTodo = await this.todoService.findTodoById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.UPDATE, targetTodo);
             await this.todoService.update(id, request);
             this.logger.log(`Updated todo successfully, todoId=${id}.`);
             return new ApiResponse('Updated todo successfully.');
@@ -115,14 +131,19 @@ export class TodosController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new UpdateTodoPolicyHandler())
     @Patch('/:id/complete')
     async markAsComplete(
+        @Req() req: Request,
         @Param('id', ParseIntPipe) id: number,
     ): Promise<ApiResponse<void>> {
         this.logger.log(`Request mark todo as complete, todoId=${id}.`);
         try {
+            const targetTodo = await this.todoService.findTodoById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.UPDATE, targetTodo);
             await this.todoService.markAsComplete(id);
             this.logger.log(`Marked todo as complete successfully, todoId=${id}.`);
             return new ApiResponse('Marked todo as complete successfully.');
@@ -135,14 +156,19 @@ export class TodosController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new DeleteTodoPolicyHandler())
     @Delete('/:id')
     async remove(
+        @Req() req: Request,
         @Param('id', ParseIntPipe) id: number,
     ): Promise<ApiResponse<void>> {
         this.logger.log(`Request delete todo, todoId=${id}.`);
         try {
+            const targetTodo = await this.todoService.findTodoById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.DELETE, targetTodo);
             await this.todoService.remove(id);
             this.logger.log(`Deleted todo successfully, todoId=${id}.`);
             return new ApiResponse('Deleted todo successfully.');

@@ -1,15 +1,19 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Logger,
-  ParseIntPipe,
-  HttpException,
-  HttpStatus,
-  Query, UseGuards, Req, Patch,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Logger,
+    ParseIntPipe,
+    HttpException,
+    HttpStatus,
+    Query,
+    UseGuards,
+    Req,
+    Patch,
+    DefaultValuePipe,
 } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserRequest } from '../dto/request/user.request.dto';
@@ -18,16 +22,29 @@ import { PageResponse } from '../dto/response/page.response';
 import { ApiResponse } from '../dto/response/api.response';
 import { JwtAuthGuard } from '../guard/jwt-auth.guard';
 import type { Request } from 'express';
-import { RoleGuard } from '../guard/has-role.guard';
-import { Roles } from '../utils/decorator/has-role.decorator.utils';
+import { CheckPolicies } from '../utils/decorator/check-policies';
+import { PoliciesGuard } from '../guard/policy-guard';
+import {
+    DeleteUserPolicyHandler,
+    ManageUserPolicyHandler,
+    ReadUserPolicyHandler,
+} from '../utils/policies/impl/user.policies';
+import { ForbiddenError } from '@casl/ability';
+import { Action } from '../utils/enum/action.enum';
+import { CaslAbilityFactory } from '../casl/casl-ability-factory';
+import { ManageRolePolicyHandler } from '../utils/policies/impl/role.policies';
 
 @Controller('users')
 export class UsersController {
     private readonly logger = new Logger(UsersController.name);
-    constructor(private readonly userService: UsersService) {}
+    constructor(
+        private readonly userService: UsersService,
+        private readonly caslAbilityFactory: CaslAbilityFactory
+    ) {}
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('USER')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('USER')
+    @CheckPolicies(new ReadUserPolicyHandler())
     @Get('profile')
     async myProfile(@Req() req: Request): Promise<ApiResponse<Express.User>> {
         this.logger.log("Request get my information.");
@@ -58,14 +75,19 @@ export class UsersController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ReadUserPolicyHandler())
     @Get(':id')
     async findOne(
         @Param('id', ParseIntPipe) id: number,
+        @Req() req: Request
     ): Promise<ApiResponse<UserResponse>> {
         this.logger.log(`Request fetch information of user, userId=${id}`);
         try {
+            const targetUser = await this.userService.findUserById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.READ, targetUser);
             const user = await this.userService.findOne(id);
             return new ApiResponse('Fetched user successfully.', user);
         } catch (error) {
@@ -80,20 +102,19 @@ export class UsersController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ManageUserPolicyHandler())
     @Get()
     async findAll(
-        @Query('page') page?: string,
-        @Query('limit') limit?: string,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
         @Query('sort') sort?: string,
     ): Promise<ApiResponse<PageResponse<UserResponse>>> {
-        const pageNum = page ? parseInt(page, 10) : 1;
-        const limitNum = limit ? parseInt(limit, 10) : 10;
         const sortArray = sort ? sort.split(',') : [];
-        this.logger.log(`Request fetch all users: page=${pageNum}, limit=${limitNum}, sort=${sortArray}`,);
+        this.logger.log(`Request fetch all users: page=${page}, limit=${limit}, sort=${sortArray}`);
         try {
-            const result = await this.userService.findAll(pageNum, limitNum, sortArray);
+            const result = await this.userService.findAll(page, limit, sortArray);
             return new ApiResponse('Fetched users successfully.', result);
         } catch (error) {
             this.logger.error(`Failed to fetch users: ${error.message}`, error.stack);
@@ -104,14 +125,19 @@ export class UsersController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new DeleteUserPolicyHandler())
     @Delete(':id')
     async remove(
         @Param('id', ParseIntPipe) id: number,
+        @Req() req: Request,
     ): Promise<ApiResponse<void>> {
         this.logger.log(`Request delete user, userId=${id}`);
         try {
+            const targetUser = await this.userService.findUserById(id);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.DELETE, targetUser);
             await this.userService.remove(id);
             return new ApiResponse('Deleted user successfully.');
         } catch (error) {
@@ -123,8 +149,9 @@ export class UsersController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ManageUserPolicyHandler())
     @Patch(':userId/roles/:roleId')
     async linkRole(
         @Param('userId', ParseIntPipe) userId: number,
@@ -143,8 +170,9 @@ export class UsersController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles('ADMIN')
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    //@Roles('ADMIN')
+    @CheckPolicies(new ManageRolePolicyHandler())
     @Delete(':userId/roles/:roleId')
     async unlinkRole(
         @Param('userId', ParseIntPipe) userId: number,

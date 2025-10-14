@@ -28,17 +28,18 @@ export class RoleGuard implements CanActivate {
             ]
         );
         const request: Request = context.switchToHttp().getRequest();
-        const infor = request.user as { id: number; username: string; roles?: string[] };
+        const infor = request.user as { username: string; roles?: string[] };
         const id: string = request.params['id'] || request.params['userId'];
 
-        if (!infor || !id) throw new ForbiddenException('User not authenticated.');
+        if (!infor) throw new ForbiddenException('User not authenticated.');
         if (infor.roles?.includes('ADMIN')) return true;
         if (!requiredRoles || requiredRoles.length === 0) return true;
 
-        const user: User = await this.userService.findUserById(Number(id));
-        if (infor.username === user.username) return true;
-        if (!infor.roles) return true;
-        return infor.roles.some((role: string): boolean => requiredRoles.includes(role));
+        if (id) {
+            const user: User = await this.userService.findUserById(Number(id));
+            if (infor.username === user.username) return true;
+        }
+        return infor.roles?.some((role: string): boolean => requiredRoles.includes(role)) ?? false;
         //return true;
     }
 }

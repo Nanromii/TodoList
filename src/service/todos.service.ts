@@ -31,6 +31,7 @@ export class TodosService {
             throw Error(`Todo with id=${userId} not found.`);
         }
         todo.user = user;
+        todo.isOwner = user.username;
         const curTodo = await this.repository.save(todo);
         this.logger.log("Created todo successfully.")
         return curTodo.id;
@@ -85,5 +86,14 @@ export class TodosService {
         todo.isDone = true;
         await this.repository.save(todo);
         this.logger.log(`Marked todo as complete successfully, todoId=${id}.`);
+    }
+
+    async findTodoById(id: number): Promise<Todo> {
+        const todo = await this.repository.findOneBy({id});
+        if (!todo) {
+            this.logger.warn(`Todo with id=${id} not found.`);
+            throw Error(`Todo with id=${id} not found.`);
+        }
+        return todo;
     }
 }

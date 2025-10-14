@@ -6,7 +6,7 @@ import { CreateTodoRequest } from '../dto/request/create-todo.request';
 @Injectable()
 export class TodoMapper {
     toResponse(todo: Todo): TodoResponse {
-        const isDone = todo.isDone ? "Đã hoàn thành." : "Chưa hoàn thành.";
+        const isDone = todo.isDone ? "Done." : "In process.";
         return new TodoResponse(todo.id, todo.title, isDone, todo.description);
     }
 

@@ -6,9 +6,14 @@ import { Todo } from '../entity/todo.entity';
 import { User } from '../entity/user.entity';
 import { TodoMapper } from '../mapper/todo.mapper';
 import { UsersModule } from './users.module';
+import { CaslModule } from './casl.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Todo, User]), UsersModule],
+    imports: [
+        TypeOrmModule.forFeature([Todo, User]),
+        UsersModule,
+        CaslModule
+    ],
     providers: [TodosService, TodoMapper],
     controllers: [TodosController],
 })

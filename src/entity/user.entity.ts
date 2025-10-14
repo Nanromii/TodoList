@@ -32,10 +32,10 @@ export class User {
     @Column()
     email: string;
 
-    @OneToMany(() => Todo, todo => todo.user, {eager: true})
+    @OneToMany(() => Todo, todo => todo.user, {cascade: true, eager: true})
     todos: Todo[];
 
-    @ManyToMany(() => Role, role => role.users, {cascade: true, eager: true})
+    @ManyToMany(() => Role, role => role.users, {cascade: true, eager: true, onDelete: "CASCADE"})
     @JoinTable({
         name: 'users_roles_roles',
         joinColumns: [{ name: 'usersId', referencedColumnName: 'id' }],

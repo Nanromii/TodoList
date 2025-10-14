@@ -11,12 +11,14 @@ import { Todo } from '../entity/todo.entity';
 import { Role } from '../entity/role.entity';
 import { Action } from '../utils/enum/action.enum';
 
-type Subject = InferSubjects<typeof User | typeof Todo | typeof Role> | 'all';
+export type Subject =
+    | InferSubjects<typeof User | typeof Todo | typeof Role>
+    | 'all';
 export type AppAbility = MongoAbility<[Action, Subject]>;
 
 @Injectable()
 export class CaslAbilityFactory {
-    createForUser(user: User): AppAbility {
+    createForUser(user: any): AppAbility {
         const { can, cannot, build } = new AbilityBuilder<AppAbility>(
             createMongoAbility,
         );
@@ -24,13 +26,13 @@ export class CaslAbilityFactory {
             isUser = false,
             isStaff = false;
         for (const role of user.roles) {
-            if (role.name === 'ADMIN') {
+            if (role === 'ADMIN') {
                 isAdmin = true;
             }
-            if (role.name === 'USER') {
+            if (role === 'USER') {
                 isUser = true;
             }
-            if (role.name === 'STAFF') {
+            if (role === 'STAFF') {
                 isStaff = true;
             }
         }
@@ -38,13 +40,20 @@ export class CaslAbilityFactory {
             can(Action.MANAGE, 'all');
         } else if (isStaff) {
             can(Action.MANAGE, Todo);
+
+            can(Action.READ, User);
+            can(Action.UPDATE, User);
+
             can(Action.READ, Role);
-            can(Action.UPDATE, Role);
-            cannot(Action.CREATE, Role);
-            cannot(Action.DELETE, Role);
         } else if (isUser) {
-            can(Action.READ, Todo, { user: { username: user.username } });
-            cannot(Action.MANAGE, Role);
+            can(Action.READ, Todo, { isOwner: user.username });
+            can(Action.CREATE, Todo);
+            can(Action.UPDATE, Todo, { isOwner: user.username });
+            can(Action.DELETE, Todo, { isOwner: user.username });
+
+            can(Action.READ, User, { username: user.username });
+            can(Action.UPDATE, User, { username: user.username });
+            can(Action.DELETE, User, { username: user.username });
         }
         return build({
             detectSubjectType: (item) =>

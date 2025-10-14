@@ -85,11 +85,9 @@ export class UsersService {
         );
         const user = await this.findUserById(userId);
         const role = await this.findRoleById(roleId);
-        if (!user.roles) user.roles = [];
-        if (!role.users) role.users = [];
-        user.roles.push(role);
-        role.users.push(user);
-        await this.roleRepository.save(role);
+        const hasRole = user.roles.some(r => r.id === role.id);
+        if (!hasRole) user.roles.push(role);
+        await this.repository.save(user);
         this.logger.log(`Linked role for user successfully.`);
     }
 
@@ -105,6 +103,7 @@ export class UsersService {
         if (role.users) {
             role.users = role.users.filter((u) => u.id !== user.id);
         }
+        await this.repository.save(user);
         await this.roleRepository.save(role);
         this.logger.log(`Unlinked role for user successfully.`);
     }
@@ -120,11 +119,11 @@ export class UsersService {
 
     async findUserById(userId: number): Promise<User> {
         const cached: User | undefined = await this.cache.get(`user:${userId}`);
-        if (cached) {
+        /*if (cached) {
             return cached;
-        }
-        const user = await this.repository.findOneBy({ id: userId });
-        await this.cache.set(`user:${userId}`, user, 60000);
+        }*/
+        const user = await this.repository.findOne({ where: { id: userId } });
+        //await this.cache.set(`user:${userId}`, user, 60000);
         if (!user) {
             this.logger.warn(`User with userId=${userId} not found.`);
             throw new Error(`User with userId=${userId} not found.`);

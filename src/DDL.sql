@@ -52,5 +52,6 @@ select *
 from roles;
 select *
 from users;
+select * from todos;
 select *
 from users_roles_roles;

@@ -29,7 +29,10 @@ export class Todo {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, (user) => user.todos)
+    @ManyToOne(() => User, (user) => user.todos, {onDelete: "CASCADE"})
     @JoinColumn({ name: 'userId' })
     user: User;
+
+    @Column()
+    isOwner?: string
 }
