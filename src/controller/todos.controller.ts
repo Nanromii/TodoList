@@ -28,12 +28,15 @@ import { ForbiddenError } from '@casl/ability';
 import { Action } from '../utils/enum/action.enum';
 import { CaslAbilityFactory } from '../casl/casl-ability-factory';
 import type { Request } from 'express';
+import { UsersService } from '../service/users.service';
+import { ReadUserPolicyHandler } from '../utils/policies/impl/user.policies';
 
 @Controller('todos')
 export class TodosController {
     private readonly logger = new Logger(TodosController.name);
     constructor(
         private readonly todoService: TodosService,
+        private readonly userService: UsersService,
         private readonly caslAbilityFactory: CaslAbilityFactory
     ) {}
 
@@ -176,6 +179,30 @@ export class TodosController {
             this.logger.error(`Failed to delete todo: ${error.message}`, error.stack);
             throw new HttpException(
                 new ApiResponse(`Failed to delete todo: ${error.message}`),
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @UseGuards(JwtAuthGuard, PoliciesGuard)
+    @CheckPolicies(new ReadUserPolicyHandler())
+    @Get('/my-todos/:id')
+    async getTodosOfUser(
+        @Param('id') userId: number,
+        @Req() req: Request
+    ): Promise<ApiResponse<PageResponse<TodoResponse>>> {
+        this.logger.log(`Request get todos of user, userId=${userId}.`);
+        try {
+            const targetUser = await this.userService.findUserById(userId);
+            const ability = this.caslAbilityFactory.createForUser(req.user);
+            ForbiddenError.from(ability).throwUnlessCan(Action.READ, targetUser);
+            const todosPage = await this.todoService.findAllTodoOfUser(userId);
+            this.logger.log(`Fetched todos successfully for userId=${userId}.`);
+            return new ApiResponse('Fetched todos successfully.', todosPage);
+        } catch (error) {
+            this.logger.error(`Failed to get todos: ${error.message}`, error.stack);
+            throw new HttpException(
+                new ApiResponse(`Failed to get todos: ${error.message}`),
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

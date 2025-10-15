@@ -88,6 +88,18 @@ export class TodosService {
         this.logger.log(`Marked todo as complete successfully, todoId=${id}.`);
     }
 
+    async findAllTodoOfUser(userId: number): Promise<PageResponse<TodoResponse>> {
+        this.logger.log(`Starting get all todo of user, id=${userId}.`);
+        const user = await this.userRepository.findOneBy({id: userId});
+        if (!user) {
+            this.logger.warn(`User with id=${userId} not found.`);
+            throw Error(`User with id=${userId} not found.`);
+        }
+        const todos = user.todos.map(todo => this.mapper.toResponse(todo));
+        this.logger.log(`Fetched successfully.`);
+        return new PageResponse<TodoResponse>(todos, todos.length, 1, todos.length);
+    }
+
     async findTodoById(id: number): Promise<Todo> {
         const todo = await this.repository.findOneBy({id});
         if (!todo) {
